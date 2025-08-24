@@ -1,0 +1,150 @@
+{
+  "interactive_menu": {
+    "response_type": "in_channel",
+    "blocks": [
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "🤖 *EC2 Controller* - Choose an action:"
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "📋 List All Instances"
+            },
+            "action_id": "show_list",
+            "style": "primary"
+          }
+        ]
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Available Commands:*\n• `/ec2` - Show this interactive menu\n• `/ec2 list` - List all instances\n• `/ec2 start <name>` - Start instance\n• `/ec2 stop <name>` - Stop instance\n• `/ec2 status <name>` - Get status"
+        }
+      }
+    ]
+  },
+
+  "error_responses": {
+    "invalid_help_command": {
+      "response_type": "in_channel",
+      "text": "❌ Invalid action 'help'. Supported actions are: start, stop, status, list"
+    },
+    "invalid_single_action": {
+      "response_type": "in_channel", 
+      "text": "❌ Invalid action 'delete'. Supported actions are: start, stop, status, list"
+    },
+    "invalid_action_with_instance": {
+      "response_type": "in_channel",
+      "text": "❌ Invalid action 'delete'. Supported actions are: start, stop, status"
+    },
+    "invalid_command_format": {
+      "response_type": "in_channel",
+      "text": "❌ Invalid command format. Use: /ec2 <action> <instance> or /ec2 for interactive menu"
+    },
+    "instance_not_found": {
+      "response_type": "in_channel",
+      "text": "❌ Instance 'nonexistent-server' not found in ap-southeast-1 region"
+    }
+  },
+
+  "success_responses": {
+    "start_instance": {
+      "response_type": "in_channel",
+      "text": "✅ Starting instance 'web-server'\nCurrent state: stopped → pending"
+    },
+    "stop_instance": {
+      "response_type": "in_channel", 
+      "text": "🛑 Stopping instance 'web-server'\nCurrent state: running → stopping"
+    },
+    "instance_status": {
+      "response_type": "in_channel",
+      "text": "📊 Instance 'web-server' Status:\n• State: running\n• Type: t3.micro\n• Private IP: 10.0.1.100\n• Public IP: 54.123.45.67"
+    },
+    "already_running": {
+      "response_type": "in_channel",
+      "text": "ℹ️ Instance 'web-server' is already running"
+    },
+    "already_stopped": {
+      "response_type": "in_channel",
+      "text": "ℹ️ Instance 'web-server' is already stopped"
+    },
+    "instance_transitioning": {
+      "response_type": "in_channel",
+      "text": "ℹ️ Instance 'web-server' is currently pending. Please wait."
+    }
+  },
+
+  "list_instances": {
+    "response_type": "in_channel",
+    "blocks": [
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "📋 *EC2 Instances in ap-southeast-1* (3 total)"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*web-server* 🟢\n`i-1234567890abcdef0` • t3.micro • running"
+        },
+        "accessory": {
+          "type": "overflow",
+          "options": [
+            {
+              "text": {"type": "plain_text", "text": "⏹️ Stop"},
+              "value": "stop_web-server"
+            },
+            {
+              "text": {"type": "plain_text", "text": "📊 Status"},
+              "value": "status_web-server"
+            }
+          ],
+          "action_id": "instance_menu_web-server"
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*database-server* 🔴\n`i-0987654321fedcba0` • t3.small • stopped"
+        },
+        "accessory": {
+          "type": "overflow",
+          "options": [
+            {
+              "text": {"type": "plain_text", "text": "▶️ Start"},
+              "value": "start_database-server"
+            },
+            {
+              "text": {"type": "plain_text", "text": "📊 Status"},
+              "value": "status_database-server"
+            }
+          ],
+          "action_id": "instance_menu_database-server"
+        }
+      }
+    ]
+  },
+
+  "no_instances": {
+    "response_type": "in_channel",
+    "text": "📋 No instances found in ap-southeast-1 region"
+  },
+
+  "error_generic": {
+    "response_type": "in_channel",
+    "text": "❌ Error: An error occurred (UnauthorizedOperation) when calling the StartInstances operation: You are not authorized to perform this operation."
+  }
+}
