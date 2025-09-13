@@ -192,7 +192,7 @@ See `docs/TROUBLESHOOTING.md` for detailed solutions.
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
@@ -203,12 +203,7 @@ For issues and questions:
 
 ## Changelog
 
-### 0.1.0 (Current)
-- Initial release with basic start/stop/status commands
-- Interactive buttons and menus
-- Support for instance names and IDs
-- Comprehensive error handling
-- Regional deployment (ap-southeast-1)
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history and release notes.
 
 ---
 

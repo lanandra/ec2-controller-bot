@@ -280,6 +280,53 @@ aws cloudwatch put-metric-alarm \
   --region ap-southeast-1
 ```
 
+### 6. Interactive Menu Issues
+
+#### Symptoms
+- Three-dot menu (overflow menu) shows "Invalid response format" error
+- Clicking Start/Stop/Status buttons does nothing
+- Interactive buttons work but no response messages appear
+
+#### Causes
+- Incorrect Slack interactive component response format
+- Missing `selected_option` value parsing for overflow menus
+- Response URL not properly configured
+
+#### Solutions
+1. **Verify Interactivity Configuration**:
+   ```bash
+   # Check if interactivity is enabled in Slack app settings
+   # Go to Slack App → Interactivity & Shortcuts → Toggle ON
+   # Use same API Gateway URL as slash command
+   ```
+
+2. **Check Lambda Logs for Interactive Actions**:
+   ```bash
+   # Look for interactive action logs
+   aws logs filter-log-events \
+     --log-group-name /aws/lambda/slack-ec2-control \
+     --region ap-southeast-1 \
+     --filter-pattern "Interactive action"
+   ```
+
+3. **Verify Response Format**:
+   - Interactive components require `response_url` for reliable message delivery
+   - Overflow menu values are in `selected_option.value`, not `value`
+   - Ensure proper JSON response format
+
+4. **Deploy Latest Version**:
+   ```bash
+   # Ensure you have the latest bugfix
+   cd ~/Projects/ec2-controller-bot
+   git checkout bugfix/invalid-response-interactive-menu
+   ./deploy.sh
+   ```
+
+#### Expected Behavior
+- Clicking overflow menu actions should show response messages
+- Actions should execute (instance starts/stops) even if message doesn't appear
+- Response messages should appear as follow-up messages in channel
+
 ## Performance Optimization
 
 ### Lambda Function Optimization

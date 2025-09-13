@@ -86,10 +86,15 @@ def handle_interactive_action(event):
         
         action_id = payload['actions'][0]['action_id']
         value = payload['actions'][0].get('value', '')
+        selected_option = payload['actions'][0].get('selected_option', {})
         user_name = payload['user']['name']
         response_url = payload.get('response_url')
         
-        logger.info(f"Interactive action: {action_id} by {user_name}")
+        # For overflow menus, the value is in selected_option
+        if not value and selected_option:
+            value = selected_option.get('value', '')
+        
+        logger.info(f"Interactive action: {action_id} with value: {value} by {user_name}")
         
         # For interactive responses, we need to respond immediately with 200
         # and then send the actual response to the response_url
@@ -104,6 +109,7 @@ def handle_interactive_action(event):
                 action = parts[1]
                 instance_name = value
             
+            logger.info(f"Executing {action} on instance {instance_name}")
             result = execute_instance_command(action, instance_name)
             
             # Send response to Slack using response_url
@@ -113,6 +119,7 @@ def handle_interactive_action(event):
             return {"statusCode": 200}
         
         elif action_id == 'show_list':
+            logger.info("Showing instance list")
             result = list_instances_with_buttons()
             
             # Send response to Slack using response_url
@@ -122,6 +129,7 @@ def handle_interactive_action(event):
             return {"statusCode": 200}
         
         elif action_id == 'show_help':
+            logger.info("Showing help menu")
             result = show_interactive_menu()
             
             if response_url:
@@ -129,16 +137,25 @@ def handle_interactive_action(event):
             
             return {"statusCode": 200}
         
-        elif action_id.startswith('instance_menu_'):
+        elif action_id == 'overflow_menu':
             # Handle overflow menu selections
-            instance_name = action_id.replace('instance_menu_', '')
+            logger.info(f"Overflow menu action with value {value}")
+            
             if '_' in value:
                 action, target_instance = value.split('_', 1)
+                logger.info(f"Executing overflow menu action: {action} on {target_instance}")
                 result = execute_instance_command(action, target_instance)
                 
+                # Send response using response_url for better reliability
                 if response_url:
                     send_response_to_slack(response_url, result)
                 
+                return {"statusCode": 200}
+            else:
+                logger.error(f"Invalid overflow menu value format: {value}")
+                if response_url:
+                    error_response = slack_response("❌ Invalid action format")
+                    send_response_to_slack(response_url, error_response)
                 return {"statusCode": 200}
         
         else:
@@ -156,7 +173,11 @@ def send_response_to_slack(response_url, lambda_response):
         
         # Extract the response body from Lambda response
         if isinstance(lambda_response, dict) and 'body' in lambda_response:
-            response_data = json.loads(lambda_response['body'])
+            try:
+                response_data = json.loads(lambda_response['body'])
+            except json.JSONDecodeError:
+                logger.error(f"Failed to parse response body: {lambda_response['body']}")
+                response_data = {"text": "❌ Invalid response format"}
         else:
             response_data = {"text": "❌ Invalid response format"}
         
@@ -171,6 +192,7 @@ def send_response_to_slack(response_url, lambda_response):
         # Send the request
         with urllib.request.urlopen(req) as response:
             result = response.read().decode('utf-8')
+            logger.info(f"Response sent to Slack successfully: {result}")
             
     except Exception as e:
         logger.error(f"Error sending response to Slack: {str(e)}")
@@ -336,7 +358,7 @@ def list_instances_with_buttons():
                 "accessory": {
                     "type": "overflow",
                     "options": options,
-                    "action_id": f"instance_menu_{instance['name']}"
+                    "action_id": f"overflow_menu"
                 }
             })
         
