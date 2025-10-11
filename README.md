@@ -37,7 +37,6 @@ Slack Slash Command (/ec2)
 ### 1. Clone and Setup
 
 ```bash
-cd ~/Projects
 git clone <your-repo> ec2-controller-bot
 cd ec2-controller-bot
 ```
